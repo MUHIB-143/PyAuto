@@ -1,64 +1,42 @@
-import ast as a, subprocess as s, sys as y, autopep8 as b, random as r, importlib as i
-from functools import reduce
+import ast as a
 
-class PAF:
-    def __init__(self, f):
-        self.f = f
+class F:
+    def __init__(s, p): s.p = p
 
-    def r(self):
-        with open(self.f, 'r+') as f:
-            c = f.read()
-        self._t(c)
-        f.seek(0)
-        f.write(self._b(c))
-        f.truncate()
-        print("[✓] Fixed!")
+    def R(s): 
+        with open(s.p) as f: return f.readlines()
 
-    def _t(self, c):
-        try:
-            a.parse(c)
-            print("[✓] No errors!")
-        except SyntaxError as e:
-            print(f"[!] Error: {e}")
+    def W(s, c):
+        with open(s.p, "w") as f: f.writelines(c)
 
-    def _b(self, c):
-        return b.fix_code(c)
+    def S(s, c):
+        try: a.parse("".join(c)); print("[✓] No Errors."); return 1
+        except SyntaxError as e: print(f"[!] Error: {e}"); return 0
 
-    def _q(self, c):
-        x = {line.split()[1]: line for line in c.splitlines() if line.startswith(('import', 'from'))}
-        return '\n'.join(line for line in c.splitlines() if line.split()[1] in x and self._u(line.split()[1], c))
+    def U(s, c):
+        t, u, n = a.parse("".join(c)), set(), []
+        [u.add(x.id) for x in a.walk(t) if isinstance(x, a.Name)]
+        [n.append(l) if not (l.startswith(("import ", "from ")) and l.split()[1] not in u) else None for l in c]
+        return n
 
-    def _u(self, imp, c):
-        return imp in c
+    def X(s, c):
+        o, d = [], 0
+        for l in c:
+            L, l = l.strip(), l.rstrip() + ":\n" if L.startswith(("if ", "elif ", "else", "for ", "while ", "def ", "class ")) and not L.endswith(":") else l
+            l = l.rstrip() + ")\n" if L.count("(") > L.count(")") else l
+            l = l.rstrip() + "]\n" if L.count("[") > L.count("]") else l
+            l = l.rstrip() + "}\n" if L.count("{") > L.count("}") else l
+            d = d + 4 if L.endswith(":") else max(0, d - 4) if L == "" else d
+            o.append(" " * d + l.lstrip())
+        return o
 
-    def _m(self, c):
-        m = {i for i in c.split() if i.isidentifier() and not self._g(i)}
-        for mod in m:
-            if self._a(mod):
-                s.check_call([y.executable, "-m", "pip", "install", mod])
-                print(f"[✓] Installed: {mod}")
-        return c
+    def I(s, c): return [l.rstrip() + "\n" for l in c]
 
-    def _g(self, mod):
-        try:
-            i.import_module(mod)
-            return True
-        except ImportError:
-            return False
-
-    def _a(self, mod):
-        return input(f"[!] Missing: {mod}. Install it? (y/n): ").strip().lower() == 'y'
-
-    def _p(self, c):
-        t = a.parse(c)
-        for n in a.walk(t):
-            if isinstance(n, a.FunctionDef) and not a.get_docstring(n):
-                c = c.replace(n.name + '(', f'"""{n.name}() function"""\n' + n.name + '(')
-        return c
-
-    def _f(self, c):
-        return reduce(lambda x, y: x.replace(y, '') if 'True |' in x else x, c.splitlines(), c)
+    def P(s):
+        c = s.R()
+        if not s.S(c): print("[!] Fixing..."); c = s.X(c)
+        s.W(s.I(s.U(c)))
+        print("[✓] Fixed.")
 
 if __name__ == "__main__":
-    f = input("Path: ").strip()
-    PAF(f).r()
+    F(input("File: ").strip()).P()
